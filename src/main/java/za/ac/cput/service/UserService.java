@@ -6,28 +6,29 @@ import za.ac.cput.domain.User;
 import za.ac.cput.repository.UserRepository;
 
 import java.util.List;
+
 @Service
 public class UserService implements IUserService {
 
     private final UserRepository repository;
-    @Autowired
 
+    @Autowired
     public UserService(UserRepository repository) {
         this.repository = repository;
     }
 
     @Override
-    public User create(User customer) {
-        User newCustomer = new User.Builder()
-                .setId(customer.getId())
-                .SetfirstName(customer.getFirstName())
-                .SetlastName(customer.getLastName())
-                .SetEmail(customer.getEmail())
-                .SetPassword(customer.getPassword())
-                .SetRole("USER")
+    public User create(User user) {
+        User newUser = new User.Builder()
+                .setId(user.getId())
+                .setFirstName(user.getFirstName())
+                .setLastName(user.getLastName())
+                .setEmail(user.getEmail())
+                .setPassword(user.getPassword())
+                .setRole("USER")
                 .build();
 
-        return repository.save(newCustomer);
+        return repository.save(newUser);
     }
 
     @Override
@@ -36,20 +37,20 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User update(User customer) {
-        if (repository.existsById(customer.getId())) {
-            User updatedCustomer = new User.Builder()
-                    .setId(customer.getId())
-                    .SetfirstName(customer.getFirstName())
-                    .SetlastName(customer.getLastName())
-                    .SetEmail(customer.getEmail())
-                    .SetPassword(customer.getPassword())
-                    .SetRole("USER")
+    public User update(User user) {
+        if (repository.existsById(user.getId())) {
+            User updatedUser = new User.Builder()
+                    .setId(user.getId())
+                    .setFirstName(user.getFirstName())
+                    .setLastName(user.getLastName())
+                    .setEmail(user.getEmail())
+                    .setPassword(user.getPassword())
+                    .setRole("USER")
                     .build();
 
-            return repository.save(updatedCustomer);
+            return repository.save(updatedUser);
         } else {
-            System.out.println("Customer with ID " + customer.getId() + " does not exist.");
+            System.out.println("User with ID " + user.getId() + " does not exist.");
             return null;
         }
     }
@@ -64,10 +65,11 @@ public class UserService implements IUserService {
         return repository.findAll();
     }
 
-    public String verify(User customer) {
-        User foundCustomer = repository.findById(customer.getId()).orElse(null);
+    @Override
+    public String verify(User user) {
+        User foundUser = repository.findById(user.getId()).orElse(null);
 
-        if (foundCustomer != null && foundCustomer.getPassword().equals(customer.getPassword())) {
+        if (foundUser != null && foundUser.getPassword().equals(user.getPassword())) {
             return "success";
         } else {
             return "fail";
@@ -75,7 +77,6 @@ public class UserService implements IUserService {
     }
 
     public User findByEmail(String email) {
-        User foundCustomer = repository.findByEmail(email);
-        return null;
+        return repository.findByEmail(email);
     }
 }

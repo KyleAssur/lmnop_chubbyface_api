@@ -7,7 +7,7 @@ import jakarta.persistence.Id;
 import java.util.Objects;
 
 @Entity
-public class User  {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,8 +15,7 @@ public class User  {
     private String lastName;
     private String email;
     private String password;
-    private String role  = "USER";
-
+    private String role = "USER";
 
     public User() {}
 
@@ -27,10 +26,9 @@ public class User  {
         this.email = builder.email;
         this.password = builder.password;
         this.role = builder.role;
-
     }
 
-    //getters
+    // Getters
     public Long getId() {
         return id;
     }
@@ -51,35 +49,39 @@ public class User  {
         return password;
     }
 
+    public String getRole() {
+        return role;
+    }
 
-    public String getRole() {return role;}
+    // Setters for password encryption
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User customer = (User) o;
-        return Objects.equals(id, customer.id) &&
-                Objects.equals(firstName, customer.firstName) &&
-                Objects.equals(lastName, customer.lastName) &&
-                Objects.equals(email, customer.email) &&
-                Objects.equals(password, customer.password) &&
-                Objects.equals(role, customer.role);
+        User user = (User) o;
+        return Objects.equals(id, user.id) &&
+                Objects.equals(firstName, user.firstName) &&
+                Objects.equals(lastName, user.lastName) &&
+                Objects.equals(email, user.email) &&
+                Objects.equals(role, user.role);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, password, role);
+        return Objects.hash(id, firstName, lastName, email, role);
     }
 
     @Override
     public String toString() {
-        return "Customer{" +
+        return "User{" +
                 "id=" + id +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
                 '}';
     }
@@ -92,41 +94,43 @@ public class User  {
         private String password;
         private String role;
 
-
         public Builder setId(Long id) {
             this.id = id;
             return this;
         }
 
-        public Builder SetfirstName(String firstName) {
+        public Builder setFirstName(String firstName) {
             this.firstName = firstName;
             return this;
         }
-        public Builder SetlastName(String lastName) {
+
+        public Builder setLastName(String lastName) {
             this.lastName = lastName;
             return this;
         }
-        public Builder SetEmail(String email) {
+
+        public Builder setEmail(String email) {
             this.email = email;
             return this;
         }
-        public Builder SetPassword(String password) {
+
+        public Builder setPassword(String password) {
             this.password = password;
             return this;
         }
 
-        public Builder SetRole(String role) {
+        public Builder setRole(String role) {
             this.role = role;
             return this;
         }
 
-        public Builder copy(User customer) {
-            this.id = customer.id;
-            this.firstName = customer.firstName;
-            this.lastName = customer.lastName;
-            this.email = customer.email;
-            this.password = customer.password;
-            this.role = customer.role;
+        public Builder copy(User user) {
+            this.id = user.id;
+            this.firstName = user.firstName;
+            this.lastName = user.lastName;
+            this.email = user.email;
+            this.password = user.password;
+            this.role = user.role;
             return this;
         }
 
@@ -135,4 +139,3 @@ public class User  {
         }
     }
 }
-

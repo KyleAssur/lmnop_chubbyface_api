@@ -54,16 +54,25 @@ public class Admin {
         return role;
     }
 
+    // Setters for password encryption
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Admin admin = (Admin) o;
-        return Objects.equals(id, admin.id) && Objects.equals(firstName, admin.firstName) && Objects.equals(lastName, admin.lastName) && Objects.equals(email, admin.email) && Objects.equals(password, admin.password)  && Objects.equals(role, admin.role);
+        return Objects.equals(id, admin.id) &&
+                Objects.equals(firstName, admin.firstName) &&
+                Objects.equals(lastName, admin.lastName) &&
+                Objects.equals(email, admin.email) &&
+                Objects.equals(role, admin.role);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, password, role);
+        return Objects.hash(id, firstName, lastName, email, role);
     }
 
     @Override
@@ -73,7 +82,6 @@ public class Admin {
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", email='" + email + '\'' +
-                ", password='" + password + '\'' +
                 ", role='" + role + '\'' +
                 '}';
     }
@@ -111,7 +119,6 @@ public class Admin {
             this.password = password;
             return this;
         }
-
 
         public Builder setRole(String role) {
             this.role = role;
