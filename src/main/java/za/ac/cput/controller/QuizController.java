@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import za.ac.cput.domain.Quiz;
 import za.ac.cput.factory.QuizFactory;
-import za.ac.cput.repository.QuizRepository;
 import za.ac.cput.service.QuizService;
 
 import java.util.List;
@@ -18,12 +17,10 @@ import java.util.Optional;
 public class QuizController {
 
     private final QuizService quizService;
-    private final QuizRepository quizRepository;
 
     @Autowired
-    public QuizController(QuizService quizService, QuizRepository quizRepository) {
+    public QuizController(QuizService quizService) {
         this.quizService = quizService;
-        this.quizRepository = quizRepository;
     }
 
     @PostMapping("/create")
@@ -55,27 +52,38 @@ public class QuizController {
     }
 
     @GetMapping("/read/{id}")
-    public ResponseEntity<String> read(@PathVariable Long id) {
+    public ResponseEntity<Quiz> read(@PathVariable Long id) {
         Optional<Quiz> quiz = quizService.read(id);
-        return quiz.map(q -> ResponseEntity.ok(q.toString()))
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("There's no content"));
+        return quiz.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<?> update(@RequestBody Quiz quiz) {
-        Quiz updated = quizService.update(quiz);
-        if (updated != null) {
-            return ResponseEntity.ok(updated);
+        try {
+            Quiz updated = quizService.update(quiz);
+            if (updated != null) {
+                return ResponseEntity.ok(updated);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found with id: " + quiz.getId());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating quiz: " + e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found or update failed");
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
-        quizService.delete(id);
-        return ResponseEntity.ok("Quiz deleted successfully");
+        try {
+            Optional<Quiz> existingQuiz = quizService.read(id);
+            if (existingQuiz.isPresent()) {
+                quizService.delete(id);
+                return ResponseEntity.ok("Quiz deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz not found with id: " + id);
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting quiz: " + e.getMessage());
+        }
     }
 
     @GetMapping("/ping")

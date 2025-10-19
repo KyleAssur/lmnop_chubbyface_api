@@ -3,7 +3,7 @@ package za.ac.cput.domain;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id; // use jakarta.persistence.Id here, not Spring's
+import jakarta.persistence.Id;
 
 import java.util.Objects;
 
@@ -18,15 +18,12 @@ public class Quiz {
     private String quizDescription;
     private String quizAuthor;
     private String quizCategory;
-    private String quizContent; // renamed from quizQuiz
+    private String quizContent;
 
     public Quiz() {}
 
-    // Used by the Builder
     private Quiz(Builder builder) {
-        // Remove this line — builder.build() causes recursion and is unnecessary
-        // this.id = builder.build().id;
-        this.id = builder.id; // assign from builder's id (add id field in builder below)
+        this.id = builder.id;
         this.quizTitle = builder.quizTitle;
         this.quizDescription = builder.quizDescription;
         this.quizAuthor = builder.quizAuthor;
@@ -34,7 +31,6 @@ public class Quiz {
         this.quizContent = builder.quizContent;
     }
 
-    // Add getter for id
     public Long getId() {
         return id;
     }
@@ -64,7 +60,7 @@ public class Quiz {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Quiz quiz = (Quiz) o;
-        return Objects.equals(id, quiz.id) && // include id in equals/hashCode
+        return Objects.equals(id, quiz.id) &&
                 Objects.equals(quizTitle, quiz.quizTitle) &&
                 Objects.equals(quizDescription, quiz.quizDescription) &&
                 Objects.equals(quizAuthor, quiz.quizAuthor) &&
@@ -90,14 +86,13 @@ public class Quiz {
     }
 
     public static class Builder {
-        private Long id;  // add id here
+        private Long id;
         private String quizTitle;
         private String quizDescription;
         private String quizAuthor;
         private String quizCategory;
         private String quizContent;
 
-        // Add setter for id in builder
         public Builder setId(Long id) {
             this.id = id;
             return this;
@@ -129,7 +124,7 @@ public class Quiz {
         }
 
         public Builder copy(Quiz quiz) {
-            this.id = quiz.id; // copy id too
+            this.id = quiz.id;
             this.quizTitle = quiz.quizTitle;
             this.quizDescription = quiz.quizDescription;
             this.quizAuthor = quiz.quizAuthor;

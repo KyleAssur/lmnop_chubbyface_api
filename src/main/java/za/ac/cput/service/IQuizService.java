@@ -8,7 +8,7 @@ import java.util.Optional;
 public interface IQuizService {
     Quiz create(Quiz quiz);
     Optional<Quiz> read(Long id);
-    Quiz update(Quiz course);
+    Quiz update(Quiz quiz); // Changed parameter name from 'course' to 'quiz'
     void delete(Long id);
     List<Quiz> getAll();
 }

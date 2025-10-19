@@ -25,17 +25,20 @@ public class QuizService implements IQuizService {
 
     @Override
     public Optional<Quiz> read(Long id) {
-        return null;
+        return repository.findById(id);
     }
 
     @Override
-    public Quiz update(Quiz course) {
+    public Quiz update(Quiz quiz) {
+        if (repository.existsById(quiz.getId())) {
+            return repository.save(quiz);
+        }
         return null;
     }
 
     @Override
     public void delete(Long id) {
-        //TODO
+        repository.deleteById(id);
     }
 
     @Override
