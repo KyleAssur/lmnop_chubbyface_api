@@ -1,50 +1,43 @@
 package za.ac.cput.DTO;
 
-public class EnrollmentDTO {
+import java.time.LocalDateTime;
 
+public class EnrollmentDTO {
     private Long id;
-    private String customerName;  // full name: first + last
+    private String studentFirstName;  // This matches frontend expectation
+    private String studentLastName;   // This matches frontend expectation
     private String courseTitle;
     private String status;
+    private LocalDateTime enrollmentDate;
 
     public EnrollmentDTO() {}
 
-    public EnrollmentDTO(Long id, String customerName, String courseTitle, String status) {
+    public EnrollmentDTO(Long id, String studentFirstName, String studentLastName,
+                         String courseTitle, String status, LocalDateTime enrollmentDate) {
         this.id = id;
-        this.customerName = customerName;
+        this.studentFirstName = studentFirstName;
+        this.studentLastName = studentLastName;
         this.courseTitle = courseTitle;
         this.status = status;
+        this.enrollmentDate = enrollmentDate;
     }
 
-    public Long getId() {
-        return id;
-    }
+    // Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public String getCustomerName() {
-        return customerName;
-    }
+    public String getStudentFirstName() { return studentFirstName; }
+    public void setStudentFirstName(String studentFirstName) { this.studentFirstName = studentFirstName; }
 
-    public String getCourseTitle() {
-        return courseTitle;
-    }
+    public String getStudentLastName() { return studentLastName; }
+    public void setStudentLastName(String studentLastName) { this.studentLastName = studentLastName; }
 
-    public String getStatus() {
-        return status;
-    }
+    public String getCourseTitle() { return courseTitle; }
+    public void setCourseTitle(String courseTitle) { this.courseTitle = courseTitle; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public void setCustomerName(String customerName) {
-        this.customerName = customerName;
-    }
-
-    public void setCourseTitle(String courseTitle) {
-        this.courseTitle = courseTitle;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public LocalDateTime getEnrollmentDate() { return enrollmentDate; }
+    public void setEnrollmentDate(LocalDateTime enrollmentDate) { this.enrollmentDate = enrollmentDate; }
 }

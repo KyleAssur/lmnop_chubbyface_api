@@ -20,6 +20,8 @@ public interface IEnrollmentService {
 
     List<Enrollment> getEnrollmentsByCustomer(User customer);
 
+    List<Enrollment> getEnrollmentsByStudent(User student);
+
     List<Enrollment> getEnrollmentsByCourse(Course course);
 
     List<Enrollment> getEnrollmentsByStatus(Enrollment.Status status);

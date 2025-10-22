@@ -17,33 +17,33 @@ import java.util.Optional;
 public class EnrollmentService implements IEnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
-    private final UserRepository customerRepository;
+    private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
     @Autowired
     public EnrollmentService(
             EnrollmentRepository enrollmentRepository,
-            UserRepository customerRepository,
+            UserRepository userRepository,
             CourseRepository courseRepository
     ) {
         this.enrollmentRepository = enrollmentRepository;
-        this.customerRepository = customerRepository;
+        this.userRepository = userRepository;
         this.courseRepository = courseRepository;
     }
 
     @Override
     public Enrollment create(Enrollment enrollment) {
-        if (enrollment.getCustomer() == null || enrollment.getCustomer().getId() == null) {
-            throw new IllegalArgumentException("Customer ID must be provided");
+        if (enrollment.getStudent() == null || enrollment.getStudent().getId() == null) {
+            throw new IllegalArgumentException("Student ID must be provided");
         }
         if (enrollment.getCourse() == null || enrollment.getCourse().getId() == null) {
             throw new IllegalArgumentException("Course ID must be provided");
         }
 
-        // Fetch customer from DB by ID
-        User customer = customerRepository.findById(enrollment.getCustomer().getId())
+        // Fetch student from DB by ID
+        User student = userRepository.findById(enrollment.getStudent().getId())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Customer not found with ID: " + enrollment.getCustomer().getId()
+                        "Student not found with ID: " + enrollment.getStudent().getId()
                 ));
 
         // Fetch course from DB by ID
@@ -53,19 +53,18 @@ public class EnrollmentService implements IEnrollmentService {
                 ));
 
         // Check if already enrolled
-        if (enrollmentRepository.existsByCustomerAndCourse(customer, course)) {
-            throw new IllegalStateException("Customer is already enrolled in this course.");
+        if (enrollmentRepository.existsByStudentAndCourse(student, course)) {
+            throw new IllegalStateException("Student is already enrolled in this course.");
         }
 
         // Create new enrollment with safe data
         Enrollment newEnrollment = new Enrollment();
-        newEnrollment.setCustomer(customer);
+        newEnrollment.setStudent(student);
         newEnrollment.setCourse(course);
         newEnrollment.setStatus(Enrollment.Status.PENDING);
 
         return enrollmentRepository.save(newEnrollment);
     }
-
 
     @Override
     public Optional<Enrollment> read(Long id) {
@@ -92,7 +91,12 @@ public class EnrollmentService implements IEnrollmentService {
 
     @Override
     public List<Enrollment> getEnrollmentsByCustomer(User customer) {
-        return enrollmentRepository.findByCustomer(customer);
+        return List.of();
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByStudent(User student) {
+        return enrollmentRepository.findByStudent(student);
     }
 
     @Override
@@ -120,15 +124,18 @@ public class EnrollmentService implements IEnrollmentService {
         enrollment.setStatus(Enrollment.Status.REJECTED);
         return enrollmentRepository.save(enrollment);
     }
+
     public EnrollmentDTO toDTO(Enrollment enrollment) {
-        String fullName = (enrollment.getCustomer().getFirstName() + " " + enrollment.getCustomer().getLastName()).trim();
         return new EnrollmentDTO(
                 enrollment.getId(),
-                fullName,
+                enrollment.getStudent().getFirstName(),
+                enrollment.getStudent().getLastName(),
                 enrollment.getCourse().getTitle(),
-                enrollment.getStatus().name()
+                enrollment.getStatus().name(),
+                enrollment.getEnrollmentDate()
         );
     }
+
     public List<EnrollmentDTO> getAllDTOs() {
         return enrollmentRepository.findAll()
                 .stream()
@@ -136,5 +143,28 @@ public class EnrollmentService implements IEnrollmentService {
                 .toList();
     }
 
+    public List<EnrollmentDTO> getEnrollmentsByStudentDTO(Long studentId) {
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found with id: " + studentId));
+        return enrollmentRepository.findByStudent(student)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
 
+    public List<EnrollmentDTO> getEnrollmentsByCourseDTO(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new IllegalArgumentException("Course not found with id: " + courseId));
+        return enrollmentRepository.findByCourse(course)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    public List<EnrollmentDTO> getEnrollmentsByStatusDTO(Enrollment.Status status) {
+        return enrollmentRepository.findByStatus(status)
+                .stream()
+                .map(this::toDTO)
+                .toList();
+    }
 }

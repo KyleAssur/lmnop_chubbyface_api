@@ -1,6 +1,7 @@
 package za.ac.cput.domain;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
@@ -12,8 +13,9 @@ public class Enrollment {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private User customer;
+    @JoinColumn(name = "student_id", nullable = false)  // Changed from customer_id to student_id
+    private User student;  // Changed from customer to student
+
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
@@ -21,6 +23,9 @@ public class Enrollment {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.PENDING;
+
+    @Column(nullable = false)
+    private LocalDateTime enrollmentDate = LocalDateTime.now();
 
     public enum Status {
         PENDING,
@@ -30,22 +35,31 @@ public class Enrollment {
 
     public Enrollment() {}
 
-    public Enrollment(User customer, Course course, Status status) {
-        this.customer = customer;
+    public Enrollment(User student, Course course, Status status) {
+        this.student = student;
         this.course = course;
         this.status = status;
+        this.enrollmentDate = LocalDateTime.now();
     }
 
+    public Enrollment(User student, Course course, Status status, LocalDateTime enrollmentDate) {
+        this.student = student;
+        this.course = course;
+        this.status = status;
+        this.enrollmentDate = enrollmentDate;
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
 
-    public User getCustomer() {
-        return customer;
+    public User getStudent() {  // Changed from getCustomer to getStudent
+        return student;
     }
 
-    public void setCustomer(User customer) {
-        this.customer = customer;
+    public void setStudent(User student) {  // Changed from setCustomer to setStudent
+        this.student = student;
     }
 
     public Course getCourse() {
@@ -64,11 +78,19 @@ public class Enrollment {
         this.status = status;
     }
 
-    // Helper method to get full customer name
-    public String getCustomerName() {
-        if (customer == null) return null;
-        String firstName = customer.getFirstName() != null ? customer.getFirstName() : "";
-        String lastName = customer.getLastName() != null ? customer.getLastName() : "";
+    public LocalDateTime getEnrollmentDate() {
+        return enrollmentDate;
+    }
+
+    public void setEnrollmentDate(LocalDateTime enrollmentDate) {
+        this.enrollmentDate = enrollmentDate;
+    }
+
+    // Helper method to get full student name
+    public String getStudentName() {  // Changed from getCustomerName to getStudentName
+        if (student == null) return null;
+        String firstName = student.getFirstName() != null ? student.getFirstName() : "";
+        String lastName = student.getLastName() != null ? student.getLastName() : "";
         return (firstName + " " + lastName).trim();
     }
 
@@ -88,5 +110,16 @@ public class Enrollment {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Enrollment{" +
+                "id=" + id +
+                ", student=" + (student != null ? student.getFirstName() + " " + student.getLastName() : "null") +
+                ", course=" + (course != null ? course.getTitle() : "null") +
+                ", status=" + status +
+                ", enrollmentDate=" + enrollmentDate +
+                '}';
     }
 }
