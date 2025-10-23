@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Entity
-@Table
+@Table(name = "enrollment")
 public class Enrollment {
 
     @Id
@@ -13,8 +13,8 @@ public class Enrollment {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "student_id", nullable = false)  // Changed from customer_id to student_id
-    private User student;  // Changed from customer to student
+    @JoinColumn(name = "student_id", nullable = false) // Changed from customer_id to student_id
+    private User student;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "course_id", nullable = false)
@@ -24,7 +24,7 @@ public class Enrollment {
     @Column(nullable = false)
     private Status status = Status.PENDING;
 
-    @Column(nullable = false)
+    @Column(name = "enrollment_date", nullable = false)
     private LocalDateTime enrollmentDate = LocalDateTime.now();
 
     public enum Status {
@@ -54,11 +54,11 @@ public class Enrollment {
         return id;
     }
 
-    public User getStudent() {  // Changed from getCustomer to getStudent
+    public User getStudent() {
         return student;
     }
 
-    public void setStudent(User student) {  // Changed from setCustomer to setStudent
+    public void setStudent(User student) {
         this.student = student;
     }
 
@@ -87,7 +87,7 @@ public class Enrollment {
     }
 
     // Helper method to get full student name
-    public String getStudentName() {  // Changed from getCustomerName to getStudentName
+    public String getStudentName() {
         if (student == null) return null;
         String firstName = student.getFirstName() != null ? student.getFirstName() : "";
         String lastName = student.getLastName() != null ? student.getLastName() : "";

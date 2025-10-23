@@ -14,7 +14,9 @@ import za.ac.cput.repository.EnrollmentRepository;
 import za.ac.cput.repository.UserRepository;
 import za.ac.cput.service.EnrollmentService;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,11 @@ public class EnrollmentController {
     @PostMapping("/enroll")
     public ResponseEntity<?> enrollStudent(@RequestBody EnrollmentRequest request) {
         try {
+            System.out.println("=== ENROLLMENT DEBUG START ===");
             System.out.println("Received enrollment request: " + request);
+            System.out.println("First Name: " + request.getFirstName());
+            System.out.println("Last Name: " + request.getLastName());
+            System.out.println("Course Name: " + request.getCourseName());
 
             // Validate input
             if (request.getFirstName() == null || request.getFirstName().trim().isEmpty()) {
@@ -63,11 +69,13 @@ public class EnrollmentController {
 
             // Find course by title
             System.out.println("Looking for course: " + courseName);
+            List<Course> allCourses = courseRepository.findAll();
+            System.out.println("All courses in DB: " + allCourses.size());
+            allCourses.forEach(c -> System.out.println(" - " + c.getTitle() + " (ID: " + c.getId() + ")"));
+
             Optional<Course> courseOpt = courseRepository.findByTitle(courseName);
             if (courseOpt.isEmpty()) {
                 System.out.println("Course not found: " + courseName);
-                // List available courses for debugging
-                List<Course> allCourses = courseRepository.findAll();
                 String availableCourses = allCourses.stream()
                         .map(Course::getTitle)
                         .collect(Collectors.joining(", "));
@@ -79,11 +87,13 @@ public class EnrollmentController {
 
             // Find user by first and last name
             System.out.println("Looking for student: " + firstName + " " + lastName);
+            List<User> allUsers = userRepository.findAll();
+            System.out.println("All users in DB: " + allUsers.size());
+            allUsers.forEach(u -> System.out.println(" - " + u.getFirstName() + " " + u.getLastName() + " (ID: " + u.getId() + ")"));
+
             Optional<User> userOpt = userRepository.findByFirstNameAndLastName(firstName, lastName);
             if (userOpt.isEmpty()) {
                 System.out.println("Student not found: " + firstName + " " + lastName);
-                // List available users for debugging
-                List<User> allUsers = userRepository.findAll();
                 String availableUsers = allUsers.stream()
                         .map(u -> u.getFirstName() + " " + u.getLastName())
                         .collect(Collectors.joining(", "));
@@ -95,7 +105,10 @@ public class EnrollmentController {
 
             // Check if already enrolled
             System.out.println("Checking existing enrollment for student " + student.getId() + " in course " + course.getId());
-            if (enrollmentRepository.existsByStudentAndCourse(student, course)) {
+            boolean alreadyEnrolled = enrollmentRepository.existsByStudentAndCourse(student, course);
+            System.out.println("Already enrolled: " + alreadyEnrolled);
+
+            if (alreadyEnrolled) {
                 System.out.println("Student already enrolled in this course");
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body("You are already enrolled in '" + courseName + "'");
@@ -114,12 +127,14 @@ public class EnrollmentController {
             // Convert to DTO for response
             EnrollmentDTO enrollmentDTO = enrollmentService.toDTO(savedEnrollment);
 
-            return ResponseEntity.ok(Map.of(
-                    "message", "Enrollment request submitted successfully!",
-                    "enrollmentId", savedEnrollment.getId(),
-                    "status", savedEnrollment.getStatus().name(),
-                    "enrollment", enrollmentDTO
-            ));
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Enrollment request submitted successfully!");
+            response.put("enrollmentId", savedEnrollment.getId());
+            response.put("status", savedEnrollment.getStatus().name());
+            response.put("enrollment", enrollmentDTO);
+
+            System.out.println("=== ENROLLMENT DEBUG END ===");
+            return ResponseEntity.ok(response);
 
         } catch (Exception e) {
             System.err.println("Enrollment error: " + e.getMessage());
@@ -202,10 +217,12 @@ public class EnrollmentController {
         try {
             Enrollment approved = enrollmentService.approveEnrollment(id);
             EnrollmentDTO dto = enrollmentService.toDTO(approved);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Enrollment approved successfully",
-                    "enrollment", dto
-            ));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Enrollment approved successfully");
+            response.put("enrollment", dto);
+
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -220,16 +237,73 @@ public class EnrollmentController {
         try {
             Enrollment rejected = enrollmentService.rejectEnrollment(id);
             EnrollmentDTO dto = enrollmentService.toDTO(rejected);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Enrollment rejected successfully",
-                    "enrollment", dto
-            ));
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Enrollment rejected successfully");
+            response.put("enrollment", dto);
+
+            return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             System.err.println("Error rejecting enrollment: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error rejecting enrollment: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/reset")
+    public ResponseEntity<?> resetEnrollment(@PathVariable Long id) {
+        try {
+            Enrollment reset = enrollmentService.resetEnrollment(id);
+            EnrollmentDTO dto = enrollmentService.toDTO(reset);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Enrollment reset to pending successfully");
+            response.put("enrollment", dto);
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            System.err.println("Error resetting enrollment: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error resetting enrollment: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateEnrollmentStatus(@PathVariable Long id, @RequestBody Map<String, String> statusRequest) {
+        try {
+            String newStatus = statusRequest.get("status");
+            if (newStatus == null) {
+                return ResponseEntity.badRequest().body("Status is required");
+            }
+
+            Enrollment enrollment = enrollmentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Enrollment not found with id: " + id));
+
+            try {
+                Enrollment.Status statusEnum = Enrollment.Status.valueOf(newStatus.toUpperCase());
+                enrollment.setStatus(statusEnum);
+                Enrollment updated = enrollmentRepository.save(enrollment);
+                EnrollmentDTO dto = enrollmentService.toDTO(updated);
+
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Enrollment status updated to " + newStatus + " successfully");
+                response.put("enrollment", dto);
+
+                return ResponseEntity.ok(response);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid status: " + newStatus + ". Valid statuses: PENDING, APPROVED, REJECTED");
+            }
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            System.err.println("Error updating enrollment status: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating enrollment status: " + e.getMessage());
         }
     }
 
@@ -242,17 +316,6 @@ public class EnrollmentController {
             System.err.println("Error deleting enrollment: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error deleting enrollment: " + e.getMessage());
-        }
-    }
-
-    // Helper class for response
-    private static class Map {
-        public static java.util.Map<String, Object> of(Object... keyValues) {
-            java.util.Map<String, Object> map = new java.util.HashMap<>();
-            for (int i = 0; i < keyValues.length; i += 2) {
-                map.put((String) keyValues[i], keyValues[i + 1]);
-            }
-            return map;
         }
     }
 }

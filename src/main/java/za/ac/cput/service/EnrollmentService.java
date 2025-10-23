@@ -90,11 +90,6 @@ public class EnrollmentService implements IEnrollmentService {
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByCustomer(User customer) {
-        return List.of();
-    }
-
-    @Override
     public List<Enrollment> getEnrollmentsByStudent(User student) {
         return enrollmentRepository.findByStudent(student);
     }
@@ -122,6 +117,14 @@ public class EnrollmentService implements IEnrollmentService {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Enrollment not found with id: " + id));
         enrollment.setStatus(Enrollment.Status.REJECTED);
+        return enrollmentRepository.save(enrollment);
+    }
+
+    @Override
+    public Enrollment resetEnrollment(Long id) {
+        Enrollment enrollment = enrollmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Enrollment not found with id: " + id));
+        enrollment.setStatus(Enrollment.Status.PENDING);
         return enrollmentRepository.save(enrollment);
     }
 

@@ -18,8 +18,6 @@ public interface IEnrollmentService {
 
     List<Enrollment> getAll();
 
-    List<Enrollment> getEnrollmentsByCustomer(User customer);
-
     List<Enrollment> getEnrollmentsByStudent(User student);
 
     List<Enrollment> getEnrollmentsByCourse(Course course);
@@ -29,4 +27,7 @@ public interface IEnrollmentService {
     Enrollment approveEnrollment(Long id);
 
     Enrollment rejectEnrollment(Long id);
+
+    // ADD THIS METHOD
+    Enrollment resetEnrollment(Long id);
 }
